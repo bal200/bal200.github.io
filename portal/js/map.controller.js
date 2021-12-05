@@ -22,9 +22,13 @@ function( $scope, $rootScope, $location, uiGmapGoogleMapApi ) {
   $scope.showPopup = false;
   $scope.editButtonDisabled = "disabled"; /* Class to add to edit button to turn it off */
   $scope.swm="";
-  $scope.map = { center: { latitude: 53.5, longitude: -2.5 },
-                 zoom: 9,
-                 options: { scaleControl:"true" } };
+  let userLocation = Parse.User.current().get('location');
+  if (!userLocation) userLocation = { latitude: 53, longitude: -2}
+  $scope.map = {
+    center: { latitude: userLocation.latitude, longitude: userLocation.longitude },
+    zoom: 12,
+    options: { scaleControl:"true" }
+  };
   $scope.markers=[];
   $scope.instMarkers=[];
   $scope.stopsMarkers=[];
