@@ -87,6 +87,17 @@
       </div>
     </div>
 
+    <div class="three fields">
+      <div class="field">
+        <div class="ui checkbox">
+          <input type="checkbox" name="installations" ng-model="stopsTick" ng-click="stopsClick()"/>
+          <label>Show Saved Places (S)</label>
+        </div>
+      </div>
+      <div class="field"></div>
+      <div class="field"></div>
+    </div>
+
     <span style="display: block; margin-top: 4px;"></span>
   </div>
 
@@ -101,6 +112,10 @@
 
     <ui-gmap-marker ng-repeat="imarker in instMarkers" idkey="imarker.id"
                     coords="imarker.coords" options="imarker.options" events="imarker.events">
+    </ui-gmap-marker>
+
+    <ui-gmap-marker ng-repeat="smarker in stopsMarkers" idkey="smarker.id"
+                    coords="smarker.coords" options="smarker.options">
     </ui-gmap-marker>
 
   </ui-gmap-google-map>

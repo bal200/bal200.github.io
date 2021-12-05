@@ -27,6 +27,7 @@ function( $scope, $rootScope, $location, uiGmapGoogleMapApi ) {
                  options: { scaleControl:"true" } };
   $scope.markers=[];
   $scope.instMarkers=[];
+  $scope.stopsMarkers=[];
 
   $scope.arrivalClick = function() {
     if ($scope.arrivalTick==true) {
@@ -40,6 +41,13 @@ function( $scope, $rootScope, $location, uiGmapGoogleMapApi ) {
       loadInstalls();
     }else{
       $scope.instMarkers = [];
+    }
+  };
+  $scope.stopsClick = function() {
+    if ($scope.stopsTick==true) {
+      loadStops();
+    }else{
+      $scope.stopsMarkers = [];
     }
   };
   $scope.editModeClick = function() {
@@ -281,7 +289,7 @@ function( $scope, $rootScope, $location, uiGmapGoogleMapApi ) {
       error: function(err) { alert("get arrivals error: "+err.code+" "+err.message); }
     });
   }
-  
+
   var markerColours = ["blue", "brown", "darkgreen", "green", "orange", "pink", "purple", "red", "yellow"];
   /* "paleblue" removed as its too light */
   /**
@@ -315,7 +323,46 @@ function( $scope, $rootScope, $location, uiGmapGoogleMapApi ) {
     return "../markers/" +colour+ "_Marker" +letter+ ".png";
   }
 
+  /*************************** load Stops(), Saved Place Markers ****************************************/
+  function loadStops() {
+    // Get the Saved Places from the server
+    var Stop = Parse.Object.extend("Stop");
+    var query = new Parse.Query(Stop);
+    if ($scope.swm=="") {
+      var usr = Parse.User.current();
+    }else{
+      var usr=new Parse.User();
+      usr.id = $scope.swm;
+    }
 
+    query.equalTo('vendor', usr);
+
+    query.limit(1000);  /* default is 100, but we need as many results as we can */
+
+    query.find({
+      success: function(res) {
+        console.log("Successfully retrieved " + res.length + " stops.");
+        $scope.$apply(function () {
+          for (var i = 0; i < res.length; i++) {
+            var object = res[i];
+            var loc = object.get('location');
+            var marker = {
+                  id: i,
+                  coords: {latitude: loc.latitude,
+                          longitude: loc.longitude},
+                  options: {
+                    labelContent: object.get('name'),
+                    icon: "../markers/paleblue_MarkerS.png", 
+                  }
+            };
+            $scope.stopsMarkers.push( marker );
+          }
+        });
+      },
+      error: function(err) { alert("get stops error: "+err.code+" "+err.message); }
+    });
+  }
+    
   function digit2(n){ return n > 9 ? ""+n : "0"+n }
 
   $scope.logout = function() {
