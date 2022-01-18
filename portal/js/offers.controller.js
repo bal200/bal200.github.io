@@ -21,6 +21,16 @@ angular.module('lunchalert-portal')
       $location.path('/portal/offer/edit');
     }
 
+    $scope.trimMessage = function( msg ) {
+      var m='';
+      if (msg) {
+        m = msg.replace(/(<([^>]+)>)/gi, "");
+        m = m.replace(/(&([^;]+);)/gi, " ");
+        if (m.length > 200) m = m.substring(0, 200) + '...';
+      }
+      return m;
+    }
+
     $scope.loadCards = function () {
       $scope.loading=true;
       Parse.Cloud.run("getCardsAndCampaigns", {

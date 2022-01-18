@@ -22,7 +22,7 @@
             <span class="cinema"><i class="calendar alternate outline icon"></i>Published on {{card.campaign.startDate | date: 'd/M/yy h:mm a'}}</span>
           </div>
           <div class="description">
-            <p>{{card.campaign.message}}</p>
+            <p>{{trimMessage(card.campaign.message)}}</p>
           </div>
           <div class="extra">
               <div class="ui right floated primary button" ng-click="editCard(card)">
