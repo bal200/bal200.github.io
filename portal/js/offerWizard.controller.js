@@ -85,25 +85,55 @@ angular.module('lunchalert-portal')
         $scope.card.compileTemplate($scope.card.campaign.get('template'), $scope.card.campaign.templateVariables, function(html) {
           $scope.card.html = html;
           $scope.saveCard(function() {
-            $scope.$apply(function() {
-              if ( !$rootScope.currentCard ) {
-                $rootScope.cards.push($scope.card);
-              }
-              $scope.finishDisabled=false;
+            if ( !$rootScope.currentCard ) {
+              $rootScope.cards.push($scope.card);
+            }
+            checkIfShouldSendNotiNow($scope.card).then(function() {
               notifyUs();
-              $location.path('/portal/offers');
+              $scope.$apply(function() {
+                $scope.finishDisabled=false;
+                $location.path('/portal/offers');
+              });
             });
           });
         });
       }else{
         $scope.saveCard(function() {
-          $scope.$apply(function() {
-            $scope.finishDisabled=false;
+          if ( !$rootScope.currentCard ) {
+            $rootScope.cards.push($scope.card);
+          }
+          checkIfShouldSendNotiNow($scope.card).then(function() {
             notifyUs();
-            $location.path('/portal/offers');
+            $scope.$apply(function() {
+              $scope.finishDisabled=false;
+              $location.path('/portal/offers');
+            });
           });
         });
       }
+    }
+
+    /** if the start time is in the past, trigger the notification to send now.  Also sets the notiStatus to SENT to avoid double sends.  */
+    var checkIfShouldSendNotiNow = function(card) {
+      console.log("checkIfShouldSendNotiNow: ", card.campaign.notiType)
+      return new Promise(function(resolve, reject) {
+        if (card.campaign.notiType === 2 &&
+            new Date() > card.campaign.startDate &&
+            new Date() < card.campaign.endDate) {
+          console.log("checkIfShouldSendNotiNow: start time is in the past, and its an 'update' type, so sending noti now.")
+          Parse.Cloud.run("sendCampaignNotification", {
+            campaignId: card.campaign.id,
+          },{ success: function(res) {
+            console.log("sendCampaignNotification: success");
+            resolve();
+          }, error: function(err) {
+            console.log("sendCampaignNotification: error ("+err.code+") "+err.message);
+            reject();
+          }});
+        }else{
+          resolve();
+        }
+      });
     }
 
     var notifyUs = function() {
@@ -111,7 +141,7 @@ angular.module('lunchalert-portal')
         message: "Offer card saved by " + $rootScope.user.get('businessName') 
           + " called " + $scope.card.title
       },{ success: function(res) {
-        console.log("notify sent");
+        console.log("notify us sent");
         /*  */
       }, error: function(err) {
         console.log("notify error ("+err.code+") "+err.message);
@@ -171,6 +201,7 @@ angular.module('lunchalert-portal')
 
     $scope.setNotification = function( choice ) {
       $scope.card.campaign.notiOn = true;
+      $scope.card.campaign.notiType = choice;
       switch (choice) {
         case 1: $scope.card.campaign.notiText = "New "+$scope.businessName+" offer today"; break;
         case 2: $scope.card.campaign.notiText = "Update from "+$scope.businessName+""; break;

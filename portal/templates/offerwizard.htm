@@ -141,25 +141,26 @@
     <div class="ui attached very segment wizard" ng-if="page==4">
       <div class="ui padded">
         <p>Notification</p>
-        <p>Choose the push notification sent out when the card is published.</p>
-        <p>Choice: "{{card.campaign.notiText}}"</p>
+        <p>Please choose what kind of notification you wish to send, offer or update.</p>
         <div class="ui form">
           <div class="grouped fields">
             <div class="field">
+              <div>For offers and specials alert to be sent out at 8am on the day chosen.</div>
               <div class="ui radio checkbox">
-                <input type="radio" name="example2" value="1" ng-click="setNotification(1)">
+                <input type="radio" name="notification-radio" value="1" ng-click="setNotification(1)">
                 <label>New {{businessName}} offer today</label>
               </div>
             </div>
             <div class="field">
+              <div>To inform customers of issues with van, etc. It will be sent out immediately 
+                if the date is today and it is past 8am, or at 8am in future days.</div>
               <div class="ui radio checkbox">
-                <input type="radio" name="example2" value="2" ng-click="setNotification(2)">
+                <input type="radio" name="notification-radio" value="2" ng-click="setNotification(2)">
                 <label>Update from {{businessName}}</label>
               </div>
             </div>
           </div>
         </div>
-
       </div>
     </div>
     <div class="ui attached very segment wizard" ng-if="page==5">
@@ -211,7 +212,9 @@
           <div class="field">
             <h2>Happy?</h2>
             <p>The offer will be published on {{card.campaign.startDate | date: 'dd/MM/yy'}}</p>
-            <p>A push notification will be sent at {{card.campaign.startTime}} on {{card.campaign.startDate | date: 'dd/MM/yy'}}</p>
+            <p>A push notification will be sent at {{card.campaign.startTime}} on {{card.campaign.startDate | date: 'dd/MM/yy'}}
+              <span ng-if="card.campaign.notiType === 2">, or now if it is past this time.</span>
+            </p>
             <p>The notification will say "{{card.campaign.notiText}}"</p>
             <p>The offer card will remain published until {{card.campaign.endTime}} on {{card.campaign.endDate | date: 'dd/MM/yy'}}</p>
           </div>
