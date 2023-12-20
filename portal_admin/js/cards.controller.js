@@ -121,7 +121,8 @@ function($scope, $location, $rootScope) {
     card.campaign.set('templateVariables', copyTemplateVars(card.templateVariables) );
     // FIXME decide what we're doing about the picture variable vs image object data
     // Generate the HTML card from template markup
-    card.compileTemplate(card.campaign.get('template'), card.templateVariables, function(html) {
+    card.compileTemplate(card.campaign.get('template'), card.templateVariables)
+    .then(function(html) {
       $scope.$apply(function() {
         card.html = html; /* trigger the iFrame to redraw */
       });

@@ -13,7 +13,8 @@ angular.module('lunchalert-portal')
       if ($scope.page <= 6) $scope.page++;
       if ($scope.page==5) {
         if (isTemplated()) {
-          $scope.card.compileTemplate($scope.card.campaign.get('template'), $scope.card.campaign.templateVariables, function(html) {
+          $scope.card.compileTemplate($scope.card.campaign.get('template'), $scope.card.campaign.templateVariables)
+          .then(function(html) {
             $scope.$apply(function() {
               $scope.card.html = html;
             });
@@ -62,55 +63,41 @@ angular.module('lunchalert-portal')
     }
 
     /* save the card & campaign parse objects */
-    $scope.saveCard = function( callback ) {
-      var card = $scope.card;
-      card.save({
-        success: function(c) {
-          if (card.campaign) {
-            card.campaign.save({
-              success: function(campaign) {
-                callback();
-              }, error: function(e) {console.log("Save Campaign error ("+e.code+") "+e.message);}
-            });
-          }else {
-            callback();
-          }
-        }, error: function(e) {console.log("Save Card error ("+e.code+") "+e.message);}
+    $scope.saveCard = function() {
+      return new Promise(function(resolve, reject) {
+        var card = $scope.card;
+        card.save({
+          success: function(c) {
+            if (card.campaign) {
+              card.campaign.save({
+                success: function(campaign) {
+                  resolve();
+                }, error: function(e) {console.log("Save Campaign error ("+e.code+") "+e.message); reject()}
+              });
+            }else {
+              resolve();
+            }
+          }, error: function(e) {console.log("Save Card error ("+e.code+") "+e.message); reject()}
+        });
       });
     };
 
-    $scope.finished = function() {
+    $scope.finished = async function() {
       $scope.finishDisabled=true;
       if (isTemplated()) {
-        $scope.card.compileTemplate($scope.card.campaign.get('template'), $scope.card.campaign.templateVariables, function(html) {
-          $scope.card.html = html;
-          $scope.saveCard(function() {
-            if ( !$rootScope.currentCard ) {
-              $rootScope.cards.push($scope.card);
-            }
-            checkIfShouldSendNotiNow($scope.card).then(function() {
-              notifyUs();
-              $scope.$apply(function() {
-                $scope.finishDisabled=false;
-                $location.path('/portal/offers');
-              });
-            });
-          });
-        });
-      }else{
-        $scope.saveCard(function() {
-          if ( !$rootScope.currentCard ) {
-            $rootScope.cards.push($scope.card);
-          }
-          checkIfShouldSendNotiNow($scope.card).then(function() {
-            notifyUs();
-            $scope.$apply(function() {
-              $scope.finishDisabled=false;
-              $location.path('/portal/offers');
-            });
-          });
-        });
+        let html = await $scope.card.compileTemplate($scope.card.campaign.get('template'), $scope.card.campaign.templateVariables)
+        $scope.card.html = html;
       }
+      await checkIfShouldSendNotiNow($scope.card);
+      await $scope.saveCard();
+      if ( !$rootScope.currentCard ) {
+        $rootScope.cards.push($scope.card);
+      }
+      notifyUs();
+      $scope.$apply(function() {
+        $scope.finishDisabled=false;
+        $location.path('/portal/offers');
+      });
     }
 
     /** if the start time is in the past, trigger the notification to send now.  Also sets the notiStatus to SENT to avoid double sends.  */
@@ -125,6 +112,7 @@ angular.module('lunchalert-portal')
             campaignId: card.campaign.id,
           },{ success: function(res) {
             console.log("sendCampaignNotification: success");
+            card.set('active', true);
             resolve();
           }, error: function(err) {
             console.log("sendCampaignNotification: error ("+err.code+") "+err.message);
@@ -153,7 +141,8 @@ angular.module('lunchalert-portal')
       //$scope.card.campaign.picture = $scope.picture;
       $scope.card.campaign.picture = 'data:' + $scope.data.pic.filetype + ';base64,' + $scope.data.pic.base64;
       if (isTemplated()) {
-        $scope.card.compileTemplate($scope.card.campaign.get('template'), $scope.card.campaign.templateVariables, function(html) {
+        $scope.card.compileTemplate($scope.card.campaign.get('template'), $scope.card.campaign.templateVariables)
+        .then(function(html) {
           $scope.$apply(function() {
             $scope.card.html = html;
           });

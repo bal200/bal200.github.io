@@ -14,7 +14,7 @@
     </div>
     <div class="item" ng-repeat="card in cards | orderBy:'order' ">
         <div class="image">
-          <img src="{{card.campaign.picture}}">
+          <img ng-if="card.campaign.picture" src="{{card.campaign.picture}}">
         </div>
         <div class="content">
           <a class="header">{{card.title}}</a>
