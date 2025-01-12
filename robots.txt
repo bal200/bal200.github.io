@@ -1,3 +1,0 @@
-User-agent: *
-Disallow: /portal/
-Sitemap: https://www.lunchalert.me/sitemap.xml
